@@ -1,5 +1,6 @@
 ﻿using FoodStoreApp.Data;
 using FoodStoreApp.Models;
+using FoodStoreApp.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,32 +25,29 @@ namespace FoodStoreApp.Controllers
             return View(productList);
         }
         // GET - UPSERT
-        public ActionResult Upsert(int? id)
+        public IActionResult Upsert(int? id)
         {
-            IEnumerable<SelectListItem> CategoryDropDown = _db.Category.Select(
-               item => new SelectListItem()
-               {
-                   Text = item.Title,
-                   Value = item.Description,
-               });
-
-            ViewBag.CategoryDropDown = CategoryDropDown;
-            // Создаем новый экземпляр типа Product
-            Product product = new();
-            // Если идентификатор пуст, то возвращаем представление
-            // с товарами
+            ProductViewModel viewModel = new ProductViewModel()
+            {
+                Product = new(),
+                CategorySelectList = _db.Category.Select(item => new SelectListItem
+                {
+                    Text = item.Title,
+                    Value = item.Id.ToString()
+                })
+            };
             if (id == null)
             {
-                return View(product);
+                return View(viewModel);
             }
             else
             {
                 // Обновляем выбранную позицию товара
-                product = _db.Product.Find(id);
-                if (product == null)
+                viewModel.Product = _db.Product.Find(id);
+                if (viewModel.Product == null)
                     return NotFound();
 
-                return View(product);
+                return View(viewModel);
             }
         }
 
